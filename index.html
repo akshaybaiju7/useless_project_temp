@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emoji-Text converter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .converter-section {
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1rem;
+        }
+
+        .input-area {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            resize: vertical;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .input-area:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .convert-btn {
+            flex: 1;
+            min-width: 150px;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-auto {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-to-emoji {
+            background: linear-gradient(45deg, #f093fb, #f5576c);
+            color: white;
+        }
+
+        .btn-to-text {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: white;
+        }
+
+        .convert-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .convert-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .convert-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-section {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .result-section h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 1.2rem;
+        }
+
+        .result-content {
+            min-height: 60px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            font-size: 1.2rem;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #666;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            color: #e53e3e;
+            background: #fed7d7;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .success {
+            color: #38a169;
+            background: #c6f6d5;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .examples {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 12px;
+        }
+
+        .examples h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .example-item {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .example-item:hover {
+            background: #667eea;
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            background: #4facfe;
+            color: white;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            z-index: 1000;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .convert-btn {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="status">🟢 Server Running</div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🔄 TalkiMoji</h1>
+            <p>Convert text to emojis or emojis to text</p>
+        </div>
+
+        <div class="converter-section">
+            <div class="input-group">
+                <label for="inputText">Enter text or emojis:</label>
+                <textarea 
+                    id="inputText" 
+                    class="input-area" 
+                    placeholder="Type your text here... e.g., 'I love pizza and music' or '🍕🎵❤️'"
+                ></textarea>
+            </div>
+
+            <div class="button-group">
+                <button class="convert-btn btn-auto" onclick="convertAuto()">
+                    🔄 Convert
+                </button>
+                
+            </div>
+        </div>
+
+        <div class="result-section">
+            <h3>Result:</h3>
+            <div id="resultContent" class="result-content">
+                Results will appear here...
+            </div>
+        </div>
+
+        <div class="examples">
+            <h3>💡 Example inputs (click to try):</h3>
+            <div class="example-item" onclick="setInput('I love coffee and coding')">
+                📝 "I love coffee and coding"
+            </div>
+            <div class="example-item" onclick="setInput('🍕🎵❤️🌟')">
+                😊 "🍕🎵❤️🌟"
+            </div>
+            <div class="example-item" onclick="setInput('Good morning sunshine')">
+                📝 "Good morning sunshine"
+            </div>
+            <div class="example-item" onclick="setInput('🏠🚗✈️🏖️')">
+                😊 "🏠🚗✈️🏖️"
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function setInput(text) {
+            document.getElementById('inputText').value = text;
+        }
+
+        function showLoading() {
+            const resultContent = document.getElementById('resultContent');
+            resultContent.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <span>Converting...</span>
+                </div>
+            `;
+        }
+
+        function showResult(result) {
+            const resultContent = document.getElementById('resultContent');
+            if (result.success) {
+                resultContent.innerHTML = `
+                    <div>${result.result}</div>
+                    <div class="success">✅ Conversion successful!</div>
+                `;
+            } else {
+                resultContent.innerHTML = `
+                    <div class="error">❌ ${result.error}</div>
+                `;
+            }
+        }
+
+        function disableButtons() {
+            const buttons = document.querySelectorAll('.convert-btn');
+            buttons.forEach(btn => btn.disabled = true);
+        }
+
+        function enableButtons() {
+            const buttons = document.querySelectorAll('.convert-btn');
+            buttons.forEach(btn => btn.disabled = false);
+        }
+
+        async function convertAuto() {
+            const inputText = document.getElementById('inputText').value.trim();
+            if (!inputText) {
+                alert('Please enter some text or emojis first!');
+                return;
+            }
+
+            showLoading();
+            disableButtons();
+
+            try {
+                const response = await fetch('/convert', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: inputText,
+                        mode: 'auto'
+                    })
+                });
+
+                const result = await response.json();
+                showResult(result);
+            } catch (error) {
+                showResult({success: false, error: 'Network error occurred'});
+            } finally {
+                enableButtons();
+            }
+        }
+
+        async function convertToEmoji() {
+            const inputText = document.getElementById('inputText').value.trim();
+            if (!inputText) {
+                alert('Please enter some text first!');
+                return;
+            }
+
+            showLoading();
+            disableButtons();
+
+            try {
+                const response = await fetch('/convert', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: inputText,
+                        mode: 'to_emoji'
+                    })
+                });
+
+                const result = await response.json();
+                showResult(result);
+            } catch (error) {
+                showResult({success: false, error: 'Network error occurred'});
+            } finally {
+                enableButtons();
+            }
+        }
+
+        async function convertToText() {
+            const inputText = document.getElementById('inputText').value.trim();
+            if (!inputText) {
+                alert('Please enter some emojis first!');
+                return;
+            }
+
+            showLoading();
+            disableButtons();
+
+            try {
+                const response = await fetch('/convert', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: inputText,
+                        mode: 'to_text'
+                    })
+                });
+
+                const result = await response.json();
+                showResult(result);
+            } catch (error) {
+                showResult({success: false, error: 'Network error occurred'});
+            } finally {
+                enableButtons();
+            }
+        }
+
+        // Allow Ctrl+Enter to trigger auto convert
+        document.getElementById('inputText').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                convertAuto();
+            }
+        });
+    </script>
+</body>
+</html>
